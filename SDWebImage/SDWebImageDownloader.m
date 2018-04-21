@@ -35,9 +35,9 @@
 @interface SDWebImageDownloader () <NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 
 @property (strong, nonatomic, nonnull) NSOperationQueue *downloadQueue;
-@property (weak, nonatomic, nullable) NSOperation *lastAddedOperation;
+@property (weak, nonatomic, nullable) NSOperation *lastAddedOperation;//用作operation的依赖
 @property (assign, nonatomic, nullable) Class operationClass;
-@property (strong, nonatomic, nonnull) NSMutableDictionary<NSURL *, SDWebImageDownloaderOperation *> *URLOperations;
+@property (strong, nonatomic, nonnull) NSMutableDictionary<NSURL *, SDWebImageDownloaderOperation *> *URLOperations;//每个url对应一个operation
 @property (strong, nonatomic, nullable) SDHTTPHeadersMutableDictionary *HTTPHeaders;
 @property (strong, nonatomic, nonnull) dispatch_semaphore_t operationsLock; // a lock to keep the access to `URLOperations` thread-safe
 @property (strong, nonatomic, nonnull) dispatch_semaphore_t headersLock; // a lock to keep the access to `HTTPHeaders` thread-safe
@@ -89,7 +89,7 @@
     if ((self = [super init])) {
         _operationClass = [SDWebImageDownloaderOperation class];
         _shouldDecompressImages = YES;
-        _executionOrder = SDWebImageDownloaderFIFOExecutionOrder;
+        _executionOrder = SDWebImageDownloaderFIFOExecutionOrder;//设置operation的执行顺序
         _downloadQueue = [NSOperationQueue new];
         _downloadQueue.maxConcurrentOperationCount = 6;
         _downloadQueue.name = @"com.hackemist.SDWebImageDownloader";
@@ -235,8 +235,9 @@
             operation.queuePriority = NSOperationQueuePriorityLow;
         }
         
-        if (sself.executionOrder == SDWebImageDownloaderLIFOExecutionOrder) {
+        if (sself.executionOrder == SDWebImageDownloaderLIFOExecutionOrder) {//栈结构，后进先出
             // Emulate LIFO execution order by systematically adding new operations as last operation's dependency
+            //上一个任务 依赖 当前任务的完成 ，实现栈结构
             [sself.lastAddedOperation addDependency:operation];
             sself.lastAddedOperation = operation;
         }
@@ -313,7 +314,7 @@
 }
 
 #pragma mark Helper methods
-
+//从还在当前队列中的任务中找到指定的下载任务
 - (SDWebImageDownloaderOperation *)operationWithTask:(NSURLSessionTask *)task {
     SDWebImageDownloaderOperation *returnOperation = nil;
     for (SDWebImageDownloaderOperation *operation in self.downloadQueue.operations) {

@@ -120,6 +120,7 @@ typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
     return shouldCancel;
 }
 
+//通过重写start方法来开启下载任务
 - (void)start {
     @synchronized (self) {
         if (self.isCancelled) {
@@ -179,6 +180,8 @@ typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
         }
         
         self.dataTask = [session dataTaskWithRequest:self.request];
+        
+        //修改状态 任务执行中
         self.executing = YES;
     }
 
@@ -246,6 +249,7 @@ typedef NSMutableDictionary<NSString *, id> SDCallbacksDictionary;
     [self reset];
 }
 
+//修改状态 - 任务已经完成（可能是任务完成、也可能是任务发生错误）
 - (void)done {
     self.finished = YES;
     self.executing = NO;
@@ -318,6 +322,7 @@ didReceiveResponse:(NSURLResponse *)response
     }
 }
 
+//接收到任务数据
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
     if (!self.imageData) {
         self.imageData = [[NSMutableData alloc] initWithCapacity:self.expectedSize];
@@ -383,6 +388,7 @@ didReceiveResponse:(NSURLResponse *)response
 
 #pragma mark NSURLSessionTaskDelegate
 
+//任务完成的回调
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
     @synchronized(self) {
         self.dataTask = nil;
