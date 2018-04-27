@@ -121,6 +121,13 @@
      *  Create the session for this task
      *  We send nil as delegate queue so that the session creates a serial operation queue for performing all delegate
      *  method calls and completion handler calls.
+     ******
+     *  创建了任务的的session
+     *  delegateQueue传nil时，系统会为所有delegate的执行，自动创建一个串行操作队列
+     *******
+     * 一个NSURLConnection对象代表一个任务, 每个任务绑定一个configuration, 全部connection对象共享一个全局存储器(global storage).
+     
+     * 一个NSURLSession对象绑定一个configuration, 一个session对象可以创建n个任务(NSURLSessionTask对象), 每个NSURLSession拥有一个私人存储器(private storage).
      */
     self.session = [NSURLSession sessionWithConfiguration:sessionConfiguration
                                                  delegate:self
